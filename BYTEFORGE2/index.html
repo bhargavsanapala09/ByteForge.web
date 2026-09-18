@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ByteForge | Campus Energy Optimizer</title>
+<meta name="description" content="An AI-powered campus energy dashboard with automatic, comfort-aware schedule recommendations.">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="2.png">
+</head>
+<body>
+
+<!-- ================= INTRO / THUNDER SPLASH ================= -->
+<div id="introSplash">
+  <div class="sky"></div>
+  <div class="flash"></div>
+  <svg viewBox="0 0 200 340" preserveAspectRatio="xMidYMid meet">
+    <path class="bolt-path" d="M110 0 L60 140 L100 140 L45 340 L150 120 L105 120 Z"/>
+  </svg>
+  <div class="brand">
+    <div class="mark">⚡</div>
+
+    <h1>BYTE<span>FORGE</span></h1>
+    <p>INITIALIZING OPTIMIZATION ENGINE</p>
+  </div>
+  <div class="rumble-bar"><i></i></div>
+</div>
+<!-- ================= LOGIN ================= -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="mark">⚡</div>
+    <h2>Welcome back</h2>
+    <p>Sign in to see live campus energy insights and AI-generated schedules.</p>
+
+    <div class="login-error" id="loginError">Enter an email and password to continue.</div>
+
+    <form id="loginForm">
+      <div class="field">
+        <label for="loginEmail">Email</label>
+        <input type="email" id="loginEmail" placeholder="you@campus.edu" autocomplete="username">
+      </div>
+      <div class="field">
+        <label for="loginPassword">Password</label>
+        <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password">
+      </div>
+      <div class="login-row">
+        <label><input type="checkbox" id="rememberMe"> Remember me</label>
+        <a href="#" onclick="return false;" style="color:var(--accent);text-decoration:none;">Forgot password?</a>
+      </div>
+      <button type="submit" class="login-btn">Sign In →</button>
+    </form>
+
+    <div class="login-hint">Demo access — enter any email &amp; password to continue.</div>
+  </div>
+</div>
+
+<!-- ================= MAIN APP ================= -->
+<div id="app">
+
+<header class="navbar">
+  <div class="logo">
+    <span class="logo-icon">⚡</span>
+    BYTE<span>FORGE</span>
+  </div>
+
+  <nav>
+    <a href="#home" class="active">Home</a>
+    <a href="#dashboard">Dashboard</a>
+    <a href="#schedule">Smart Schedule</a>
+    <a href="#about">About</a>
+  </nav>
+
+  <div class="navbar-right">
+    <div class="system-status">
+      <span class="status-dot"></span>
+      System Online
+    </div>
+    <button class="theme-toggle" id="themeToggle" title="Toggle light / dark mode">
+      <span class="knob" id="themeKnob">🌙</span>
+    </button>
+    <button class="logout-btn" id="logoutBtn">Log out</button>
+  </div>
+</header>
+
+<section id="home" class="hero">
+  <div class="hero-content">
+    <div class="small-label">⚡ AI-POWERED ENERGY OPTIMIZATION</div>
+    <h1>Save energy.<br><span>Keep comfort.</span></h1>
+    <p>
+      See where energy is going, then let AI build a practical daily plan
+      that shifts flexible loads, smooths peak demand, and protects comfort
+      across your campus.
+    </p>
+
+    <div class="hero-buttons">
+      <button onclick="openSchedule()" class="primary-btn">Build today’s plan →</button>
+      <a href="#dashboard" class="secondary-btn">View live usage</a>
+    </div>
+
+    <div class="features">
+      <div class="feature">
+        <div class="feature-icon">🌱</div>
+        <div><b>Reduce Waste</b><small>Cut avoidable energy loss</small></div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">🛡️</div>
+        <div><b>Detect Anomalies</b><small>Flagged within minutes</small></div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">🤖</div>
+        <div><b>Smart Schedules</b><small>Comfort-aware load shifting</small></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-visual">
+    <div class="campus-glow"></div>
+    <div class="campus-card">
+      <div class="building building1"></div>
+      <div class="building building2"></div>
+      <div class="building building3"></div>
+      <div class="building building4"></div>
+      <div class="campus-lights"></div>
+    </div>
+    <div class="floating-card">
+      <span>⚡</span>
+      <div><small>Today’s potential</small><strong id="heroPotential">18.6%</strong></div>
+      <b class="green">↓ peak load</b>
+    </div>
+  </div>
+</section>
+
+<section class="stats">
+  <div class="stat-card green-card">
+    <div class="stat-icon">⚡</div>
+    <div><span>Energy Efficiency</span><h2>92.4%</h2><small>↑ 2.3% this week</small></div>
+  </div>
+  <div class="stat-card red-card">
+    <div class="stat-icon">⚠</div>
+    <div><span>Peak Avoidance</span><h2 id="statPotential">18.6%</h2><small>With AI schedule</small></div>
+  </div>
+  <div class="stat-card blue-card">
+    <div class="stat-icon">📊</div>
+    <div><span>Peak Demand</span><h2>2:00 PM</h2><small>Today's peak</small></div>
+  </div>
+</section>
+
+<section id="dashboard" class="dashboard-section">
+  <div class="dashboard-header">
+    <div>
+      <div class="small-label">LIVE MONITORING</div>
+      <h2>Campus Energy Dashboard</h2>
+      <p>Compare real usage with expected demand, then turn insights into an action plan.</p>
+    </div>
+    <div class="building-selector">
+      <label>Select Building</label>
+      <select id="buildingSelect" onchange="changeBuilding()">
+        <option value="all">All Buildings</option>
+        <option value="academic">Academic Block</option>
+        <option value="hostel">Hostel</option>
+        <option value="library">Library</option>
+        <option value="lab">Lab Building</option>
+        <option value="sports">Sports Complex</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="metrics">
+    <div class="metric-card">
+      <span>Total Energy Waste</span>
+      <div class="metric-value"><strong id="wasteValue">1,248</strong><small>kWh</small></div>
+      <div class="metric-change green">↓ 32%</div>
+      <p>vs. last 7 days</p>
+    </div>
+    <div class="metric-card anomaly">
+      <span>Anomaly Count</span>
+      <div class="metric-value"><strong id="anomalyValue">12</strong></div>
+      <div class="metric-change red">↓ 45%</div>
+      <p>vs. last 7 days</p>
+    </div>
+    <div class="metric-card peak">
+      <span>Peak Demand Hour</span>
+      <div class="metric-value"><strong id="peakValue">2:00 PM</strong></div>
+      <div class="metric-change blue">● Today</div>
+      <p>Highest consumption</p>
+    </div>
+    <div class="metric-card savings">
+      <span>Potential Annual Savings</span>
+      <div class="metric-value"><strong id="annualSavingsValue">₹5.97L</strong></div>
+      <div class="metric-change green">↑ ₹49,786/mo</div>
+      <p>if identified waste is avoided</p>
+    </div>
+  </div>
+  <p class="savings-note">💡 Annual savings are an estimate based on the selected 7-day energy-waste figure, annualized to 52 weeks, using the dashboard's ₹9.20/kWh working tariff.</p>
+
+  <section id="schedule" class="planner-section" aria-labelledby="plannerTitle">
+    <div class="planner-intro">
+      <div class="small-label">AUTOMATIC RECOMMENDATION</div>
+      <h2 id="plannerTitle">Your next best energy schedule</h2>
+      <p>Tell the optimizer what matters today. It uses the selected building’s demand pattern to schedule HVAC and flexible loads around the busiest hours.</p>
+
+      <div class="planner-controls" aria-label="Schedule settings">
+        <label>
+          <span>Building</span>
+          <select id="scheduleBuilding">
+            <option value="academic">Academic Block</option>
+            <option value="hostel">Hostel</option>
+            <option value="library">Library</option>
+            <option value="lab">Lab Building</option>
+            <option value="sports">Sports Complex</option>
+          </select>
+        </label>
+        <label>
+          <span>Operating day</span>
+          <select id="scheduleDay">
+            <option value="weekday">Teaching day</option>
+            <option value="weekend">Weekend / low occupancy</option>
+            <option value="event">Event day</option>
+          </select>
+        </label>
+        <label>
+          <span>Optimization priority</span>
+          <select id="scheduleGoal">
+            <option value="balanced">Balanced savings</option>
+            <option value="savings">Maximum savings</option>
+            <option value="comfort">Maximum comfort</option>
+          </select>
+        </label>
+        <label class="temperature-control">
+          <span>Preferred comfort setpoint <output id="temperatureValue" for="targetTemperature">24°C</output></span>
+          <input type="range" id="targetTemperature" min="21" max="27" value="24" step="1">
+        </label>
+      </div>
+
+      <div class="planner-actions">
+        <button type="button" class="primary-btn" id="generateSchedule">Generate optimized schedule <span>↗</span></button>
+        <button type="button" class="text-btn" id="resetSchedule">Reset choices</button>
+      </div>
+      <p class="planner-note">Recommendations are explainable estimates based on today’s modeled load—not direct equipment control.</p>
+    </div>
+
+    <div class="schedule-result" aria-live="polite">
+      <div class="schedule-result-top">
+        <div>
+          <span class="result-eyebrow">AI SCHEDULE • <span id="resultBuilding">Academic Block</span></span>
+          <h3 id="scheduleHeadline">A calmer peak without a colder classroom</h3>
+          <p id="scheduleSummary">Pre-condition before arrival, then move flexible equipment away from the afternoon spike.</p>
+        </div>
+        <div class="confidence-badge"><span>✦</span><div><small>Confidence</small><strong id="scheduleConfidence">High · 94%</strong></div></div>
+      </div>
+
+      <div class="savings-grid">
+        <div><span>Expected reduction</span><strong id="scheduleReduction">18.6%</strong><small id="scheduleKwh">77 kWh today</small></div>
+        <div><span>Potential saving</span><strong id="scheduleCost">₹708</strong><small>estimated today</small></div>
+        <div><span>Peak protected</span><strong id="schedulePeak">1:00–3:00 PM</strong><small>highest demand window</small></div>
+      </div>
+
+      <div class="schedule-timeline-wrap">
+        <div class="timeline-heading"><span>Recommended operating plan</span><small>Updates automatically as settings change</small></div>
+        <div id="scheduleTimeline" class="schedule-timeline"></div>
+      </div>
+
+      <div class="schedule-footer">
+        <div class="recommendation-reason"><span>✦</span><p id="scheduleReason">Why this plan: the Academic Block’s AC demand rises before the day’s highest occupancy, so a short pre-cool and staggered equipment start reduces the 1 PM peak.</p></div>
+        <button type="button" class="apply-btn" id="applySchedule">Apply this schedule <span>→</span></button>
+      </div>
+    </div>
+  </section>
+
+  <div class="dashboard-grid">
+    <div class="chart-card">
+      <div class="card-header">
+        <div>
+          <h3>Actual vs Expected Energy Usage</h3>
+          <p>24-hour consumption analysis</p>
+        </div>
+        <div class="legend">
+          <span><i class="actual-dot"></i>Actual</span>
+          <span><i class="expected-dot"></i>Expected</span>
+          <span><i class="anomaly-dot"></i>Anomaly</span>
+        </div>
+      </div>
+      <div id="energyChart"><canvas id="energyCanvas"></canvas></div>
+    </div>
+
+    <div class="buildings-card">
+      <div class="card-header">
+        <div><h3>Energy Usage by Building</h3><p>Current consumption</p></div>
+      </div>
+      <div class="building-row"><div class="building-name">Academic Block</div><div class="bar"><div style="width:92%"></div></div><strong>412 kWh</strong></div>
+      <div class="building-row"><div class="building-name">Hostel</div><div class="bar"><div style="width:78%"></div></div><strong>348 kWh</strong></div>
+      <div class="building-row"><div class="building-name">Library</div><div class="bar"><div style="width:61%"></div></div><strong>276 kWh</strong></div>
+      <div class="building-row"><div class="building-name">Lab Building</div><div class="bar"><div style="width:46%"></div></div><strong>198 kWh</strong></div>
+      <div class="building-row"><div class="building-name">Sports Complex</div><div class="bar"><div style="width:34%"></div></div><strong>142 kWh</strong></div>
+      <div class="building-row"><div class="building-name">Admin Block</div><div class="bar"><div style="width:23%"></div></div><strong>96 kWh</strong></div>
+    </div>
+  </div>
+
+  <div class="anomaly-section">
+    <div class="card-header">
+      <div><h3>🔴 Detected Energy Spikes</h3><p>AI-generated analysis and recommended actions</p></div>
+      <button class="view-btn">View All →</button>
+    </div>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>Time</th><th>Building</th><th>Actual</th><th>Expected</th><th>AI Root Cause</th><th>Recommended Action</th></tr>
+        </thead>
+        <tbody id="anomalyTable">
+          <tr><td>11:20 AM</td><td>Academic Block</td><td class="danger">214 kWh</td><td>138 kWh</td><td>HVAC running at high load</td><td>Check AC settings and temperature</td></tr>
+          <tr><td>2:05 PM</td><td>Lab Building</td><td class="danger">268 kWh</td><td>180 kWh</td><td>Lab equipment running overtime</td><td>Verify equipment schedule</td></tr>
+          <tr><td>5:40 PM</td><td>Hostel</td><td class="danger">192 kWh</td><td>130 kWh</td><td>Water heater / lighting load</td><td>Inspect heaters and lighting</td></tr>
+          <tr><td>9:15 PM</td><td>Library</td><td class="danger">176 kWh</td><td>120 kWh</td><td>Unnecessary lighting</td><td>Turn off unused lights</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="insights-card">
+    <div class="card-header">
+      <div><h3>🤖 AI Recommendations</h3><p>Prioritized actions based on this week's data</p></div>
+    </div>
+    <div class="insight-row">
+      <div class="insight-icon">⏱</div>
+      <div class="insight-body">
+        <strong>Shift lab equipment scheduling</strong>
+        <p>Lab Building consistently spikes at 2 PM. Staggering equipment start times could cut peak load by an estimated 15%.</p>
+        <span class="insight-tag">High impact</span>
+      </div>
+    </div>
+    <div class="insight-row">
+      <div class="insight-icon">🌡</div>
+      <div class="insight-body">
+        <strong>Review Academic Block HVAC setpoints</strong>
+        <p>Mid-morning HVAC load is running above expected baseline three days this week. A 2°F setpoint adjustment may resolve it.</p>
+        <span class="insight-tag">Medium impact</span>
+      </div>
+    </div>
+    <div class="insight-row">
+      <div class="insight-icon">💡</div>
+      <div class="insight-body">
+        <strong>Automate Library evening lighting</strong>
+        <p>Lighting stays on well past closing hours most nights. A timer or occupancy sensor would remove this recurring waste.</p>
+        <span class="insight-tag">Quick win</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="about" class="about">
+  <div class="about-content">
+    <div class="small-label">ABOUT THE PROJECT</div>
+    <h2>AI for a More Sustainable Environment</h2>
+    <p>
+      ByteForge compares real-time consumption data against
+      expected usage patterns for every area in the Environment. When
+      actual demand drifts from what the model expects, the system
+      flags it, explains a likely cause, and suggests a concrete
+      next step — turning raw meter data into decisions users
+       can act on the same day.
+    </p>
+    <div class="about-features">
+      <div><b>01</b><span>Monitor</span><p>Track energy usage across every area, continuously.</p></div>
+      <div><b>02</b><span>Detect</span><p>Catch abnormal consumption as it happens, not at month-end.</p></div>
+      <div><b>03</b><span>Act</span><p>Get plain-language, AI-generated recommendations your team can use.</p></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="logo">⚡ ByteForge</div>
+  <p>Smart Energy • Smart Environment • Sustainable Future</p> 
+  <P>DESIGNED BY BYTEFORGE</P>
+    <nav aria-label="Main Navigation">
+        <a href="index.html">Home</a><br>
+        <a href="tel:+1234567890">Contact us</a>
+    </nav>
+  <span>© 2026. All rights reserved</span>
+</footer>
+
+</div><!-- /#app -->
+
+<script src="script.js"></script>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
