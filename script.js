@@ -6,7 +6,6 @@ function applyTheme(theme){
   const knob = document.getElementById('themeKnob');
   if(knob) knob.textContent = theme === 'light' ? '☀️' : '🌙';
   try{ localStorage.setItem('cea-theme', theme); }catch(e){}
-  if(window._energyChart){ updateChartTheme(); }
 }
 
 (function initTheme(){
@@ -71,8 +70,6 @@ document.getElementById('loginForm').addEventListener('submit', function(e){
   setTimeout(function(){
     loginScreen.classList.add('hidden');
     document.getElementById('app').classList.add('visible');
-
-    initChart();
   }, 500);
 });
 
@@ -108,242 +105,6 @@ function openSchedule(){
       behavior:'smooth',
       block:'center'
     });
-}
-
-
-/* =========================================================
-   ENERGY CHART DATA
-========================================================= */
-
-const hours = [
-  "12 AM","1 AM","2 AM","3 AM","4 AM","5 AM",
-  "6 AM","7 AM","8 AM","9 AM","10 AM","11 AM",
-  "12 PM","1 PM","2 PM","3 PM","4 PM","5 PM",
-  "6 PM","7 PM","8 PM","9 PM","10 PM","11 PM"
-];
-
-
-const actualEnergy = [
-  105,98,92,88,82,75,
-  73,81,78,96,112,135,
-  160,178,214,195,165,120,
-  95,90,125,155,132,110
-];
-
-
-const expectedEnergy = [
-  100,96,91,86,80,76,
-  74,78,82,92,105,120,
-  138,150,158,152,135,115,
-  98,94,108,120,115,105
-];
-
-
-const anomalyIndexes = [
-  11,14,20
-]; 
-// 11 AM, 2 PM, 9 PM
-
-
-/* =========================================================
-   CHART THEME
-========================================================= */
-
-function themeColors(){
-
-  const light =
-    document.documentElement.getAttribute('data-theme') === 'light';
-
-  return {
-
-    grid: light
-      ? '#e1e9ee'
-      : '#122b3c',
-
-    text: light
-      ? '#425a68'
-      : '#8194a2',
-
-    actual: light
-  ? '#1677ff'
-  : '#3da5ff',
-
-    expected: light
-  ? '#075fd6'
-  : '#70bdff',
-
-    anomaly: light
-      ? '#d92c48'
-      : '#ff3e5c'
-  };
-}
-
-
-/* =========================================================
-   INITIALIZE ENERGY CHART
-========================================================= */
-
-function initChart(){
-
-  const ctx =
-    document.getElementById('energyCanvas');
-
-  if(!ctx || window._energyChart) return;
-
-  const c = themeColors();
-
-  window._energyChart = new Chart(ctx, {
-
-    type: 'line',
-
-    data: {
-
-      labels: hours,
-
-      datasets: [
-
-        {
-          label:'Actual',
-
-          data:actualEnergy,
-
-          borderColor:c.actual,
-
-          backgroundColor:c.actual,
-
-          pointRadius:3,
-
-          tension:0.35,
-
-          borderWidth:2
-        },
-
-        {
-          label:'Expected',
-
-          data:expectedEnergy,
-
-          borderColor:c.expected,
-
-          backgroundColor:c.expected,
-
-          borderDash:[6,4],
-
-          pointRadius:0,
-
-          tension:0.35,
-
-          borderWidth:2
-        },
-
-        {
-          label:'Anomaly',
-
-          data:actualEnergy.map(
-            (v,i) =>
-              anomalyIndexes.includes(i)
-                ? v
-                : null
-          ),
-
-          borderColor:c.anomaly,
-
-          backgroundColor:c.anomaly,
-
-          pointRadius:6,
-
-          pointHoverRadius:7,
-
-          showLine:false
-        }
-
-      ]
-    },
-
-
-    options:{
-
-      responsive:true,
-
-      maintainAspectRatio:false,
-
-      interaction:{
-        mode:'index',
-        intersect:false
-      },
-
-      plugins:{
-        legend:{
-          display:false
-        }
-      },
-
-      scales:{
-
-        x:{
-          grid:{
-            color:c.grid
-          },
-
-          ticks:{
-            color:c.text,
-            maxTicksLimit:8
-          }
-        },
-
-        y:{
-
-          grid:{
-            color:c.grid
-          },
-
-          ticks:{
-            color:c.text
-          },
-
-          title:{
-            display:true,
-
-            text:'Energy Usage (kWh)',
-
-            color:c.text
-          }
-        }
-
-      }
-    }
-  });
-}
-
-
-/* =========================================================
-   UPDATE CHART THEME
-========================================================= */
-
-function updateChartTheme(){
-
-  const c = themeColors();
-
-  const chart = window._energyChart;
-
-  chart.data.datasets[0].borderColor = c.actual;
-  chart.data.datasets[0].backgroundColor = c.actual;
-
-  chart.data.datasets[1].borderColor = c.expected;
-  chart.data.datasets[1].backgroundColor = c.expected;
-
-  chart.data.datasets[2].borderColor = c.anomaly;
-  chart.data.datasets[2].backgroundColor = c.anomaly;
-
-  chart.options.scales.x.grid.color = c.grid;
-  chart.options.scales.x.ticks.color = c.text;
-
-  chart.options.scales.y.grid.color = c.grid;
-  chart.options.scales.y.ticks.color = c.text;
-
-  chart.options.scales.y.title.color = c.text;
-
-  chart.update();
 }
 
 
@@ -1198,9 +959,7 @@ function initPlanner(){
 
     'scheduleDay',
 
-    'scheduleGoal',
-
-    'targetTemperature'
+    'scheduleGoal'
 
   ];
 
@@ -1208,21 +967,27 @@ function initPlanner(){
   plannerControls.forEach(
     id => {
 
-      const eventName =
-        id === 'targetTemperature'
-          ? 'input'
-          : 'change';
-
-
       document
         .getElementById(id)
         .addEventListener(
-          eventName,
+          'change',
           () => renderSchedule(false)
         );
 
     }
   );
+
+
+  // Slider: only update the visible °C label while dragging.
+  // Full schedule recalculation happens on button click, not while moving the slider.
+  document
+    .getElementById('targetTemperature')
+    .addEventListener('input', () => {
+
+      document.getElementById('temperatureValue').textContent =
+        `${document.getElementById('targetTemperature').value}°C`;
+
+    });
 
 
   generate.addEventListener(
@@ -1255,6 +1020,11 @@ function initPlanner(){
         document.getElementById(
           'targetTemperature'
         ).value = '24';
+
+
+        document.getElementById(
+          'temperatureValue'
+        ).textContent = '24°C';
 
 
         renderSchedule(true);
