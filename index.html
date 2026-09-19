@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ByteForge | Campus Energy Optimizer</title>
 <meta name="description" content="An AI-powered campus energy dashboard with automatic, comfort-aware schedule recommendations.">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
 <link rel="stylesheet" href="style.css">
 <link rel="icon" href="2.png">
 </head>
@@ -26,6 +25,7 @@
   </div>
   <div class="rumble-bar"><i></i></div>
 </div>
+
 <!-- ================= LOGIN ================= -->
 <div id="loginScreen">
   <div class="login-card">
@@ -269,21 +269,6 @@
   </section>
 
   <div class="dashboard-grid">
-    <div class="chart-card">
-      <div class="card-header">
-        <div>
-          <h3>Actual vs Expected Energy Usage</h3>
-          <p>24-hour consumption analysis</p>
-        </div>
-        <div class="legend">
-          <span><i class="actual-dot"></i>Actual</span>
-          <span><i class="expected-dot"></i>Expected</span>
-          <span><i class="anomaly-dot"></i>Anomaly</span>
-        </div>
-      </div>
-      <div id="energyChart"><canvas id="energyCanvas"></canvas></div>
-    </div>
-
     <div class="buildings-card">
       <div class="card-header">
         <div><h3>Energy Usage by Building</h3><p>Current consumption</p></div>
@@ -370,7 +355,7 @@
 
 <footer>
   <div class="logo">⚡ ByteForge</div>
-  <p>Smart Energy • Smart Environment • Sustainable Future</p> 
+  <p>Smart Energy • Smart Environment • Sustainable Future</p>
   <P>DESIGNED BY BYTEFORGE</P>
     <nav aria-label="Main Navigation">
         <a href="index.html">Home</a><br>
